@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// GPL-2.0 license
+
+#pragma once
 
 #include "ToonTanksTypes.generated.h"
 
