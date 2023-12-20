@@ -128,23 +128,24 @@ void UToonTanksGameInstance::AsyncCheckLatestVersion()
 {
 	auto Request = FHttpModule::Get().CreateRequest();
 	Request->SetURL(FString("https://itch.io/api/1/x/wharf/latest?game_id=2318899&channel_name=windows"));
-	Request->OnProcessRequestComplete().BindLambda([this](const FHttpRequestPtr& Request, const FHttpResponsePtr& Response, bool bSuccess)
-	{
-		if (bSuccess && Response->GetContentType() == "application/json")
+	Request->OnProcessRequestComplete().BindLambda(
+		[this](const FHttpRequestPtr& Request, const FHttpResponsePtr& Response, bool bSuccess)
 		{
-			TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
+			if (bSuccess && Response->GetContentType() == "application/json")
+			{
+				TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 
-			TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(Response->GetContentAsString());
+				TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(Response->GetContentAsString());
 
-			FJsonSerializer::Deserialize(JsonReader, JsonObject);
+				FJsonSerializer::Deserialize(JsonReader, JsonObject);
 
-			ItchLatestVersion = JsonObject->GetStringField("latest");
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Unable to GET latest version"));
-		}
-	});
+				ItchLatestVersion = JsonObject->GetStringField("latest");
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Unable to GET latest version"));
+			}
+		});
 
 	Request->ProcessRequest();
 }

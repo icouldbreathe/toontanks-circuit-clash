@@ -54,7 +54,7 @@ public:
 
 private:
 	void AsyncCheckLatestVersion();
-	
+
 	UPROPERTY()
 	APostProcessVolume* PPVolumeActor;
 	UPROPERTY()

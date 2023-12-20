@@ -67,7 +67,7 @@ void AFactionLevelManager::UpdateLevelState()
 		{
 			IFactionColorInterface::Execute_ChangeFactionColor(Actor, OwningFaction);
 		}
-		
+
 		if (auto Tower = Cast<ATower>(Actor))
 		{
 			switch (OwningFaction)

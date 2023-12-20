@@ -111,7 +111,6 @@ void AToonTanksGameMode::BeginPlay()
 
 	Cast<UToonTanksGameInstance>(GetGameInstance())->OnSaveGame.AddDynamic(this, &AToonTanksGameMode::SaveGame);
 	Tank = Cast<ATank>(UGameplayStatics::GetPlayerPawn(this, 0));
-	ToonTanksPlayerController = Cast<AToonTanksPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 
 	StartGame();
 }
@@ -162,7 +161,11 @@ AActor* AToonTanksGameMode::ChoosePlayerStart_Implementation(AController* Player
 void AToonTanksGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
 	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
-	NewPlayer->SetName(DefaultPlayerName.ToString());
+
+	ToonTanksPlayerController = Cast<AToonTanksPlayerController>(NewPlayer);
+
+	ToonTanksPlayerController->SetName(DefaultPlayerName.ToString());
+	ToonTanksPlayerController->SetPlayerEnabledState(false);
 }
 
 void AToonTanksGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)

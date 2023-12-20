@@ -114,8 +114,13 @@ void UHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const UDa
 		IDamageTriggerEffectInterface::Execute_TriggerEffect(DamageType->GetOutermostObject(), GetOwner(), Instigator);
 	}
 
-	const float FinalDamage = ToonTanksGameMode->GetGameDifficulty()->GetFinalDamage(
-		Damage, DamagedActor, Instigator, DamageType);
+	float FinalDamage = Damage;
+
+	if (ToonTanksGameMode->GetGameDifficulty())
+	{
+		FinalDamage = ToonTanksGameMode->GetGameDifficulty()->GetFinalDamage(
+			Damage, DamagedActor, Instigator, DamageType);
+	}
 
 	AddHealth(FMath::CeilToFloat(-FinalDamage));
 

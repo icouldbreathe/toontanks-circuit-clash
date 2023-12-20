@@ -10,6 +10,6 @@ public class ToonTanksEditorTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
 
-		ExtraModuleNames.AddRange(new string[] { "ToonTanks" });
+		ExtraModuleNames.AddRange(new[] { "ToonTanks" });
 	}
 }

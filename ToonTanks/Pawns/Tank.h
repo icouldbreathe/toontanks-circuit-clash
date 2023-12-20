@@ -59,9 +59,11 @@ private:
 	void Move(const FInputActionValue& Value);
 	void Turn(const FInputActionValue& Value);
 	void RotateByCursor() const;
-	
+
 	void ChangeProjectileOffset(const FInputActionValue& Value);
 	void ChangeProjectileSlot(const FInputActionValue& Value);
+
+	bool ForwardTrace(float Direction, FHitResult& Hit);
 
 	UPROPERTY()
 	AToonTanksPlayerController* TankPlayerController;

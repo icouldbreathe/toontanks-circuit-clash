@@ -141,10 +141,10 @@ FString UToonTanksCommon::GetRHIName()
  */
 FString UToonTanksCommon::GetBiggerVersion(const FString& VersionA, const FString& VersionB)
 {
-    FString VersionAFirst;
+	FString VersionAFirst;
 	FString VersionASecond;
 	FString VersionAThird;
-	
+
 	VersionA.Split(TEXT("."), &VersionAFirst, &VersionASecond);
 	VersionASecond.Split(TEXT("."), &VersionASecond, &VersionAThird);
 
@@ -181,6 +181,6 @@ FString UToonTanksCommon::GetBiggerVersion(const FString& VersionA, const FStrin
 	{
 		return VersionA;
 	}
-	
+
 	return VersionA;
 }

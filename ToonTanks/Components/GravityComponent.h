@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "ToonTanks/Interfaces/GravityInterface.h"
 #include "GravityComponent.generated.h"
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class TOONTANKS_API UGravityComponent : public UActorComponent
+class TOONTANKS_API UGravityComponent : public UActorComponent, public IGravityInterface
 {
 	GENERATED_BODY()
 
@@ -17,7 +18,10 @@ public:
 	UGravityComponent();
 
 	UFUNCTION(BlueprintCallable)
-	void EnableGravity(bool bEnable);
+	void SetGravity(bool bEnable);
+
+	virtual void EnableGravity_Implementation(bool bEnabled) override;
+	virtual bool IsFalling_Implementation() override;
 
 protected:
 	// Called when the game starts
@@ -28,9 +32,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Gravity")
 	float DistanceToGroundAtRest = 80.f;
 	UPROPERTY(EditAnywhere, Category="Gravity")
-	float KillVelocity = 5000.f;
+	float KillVelocity = 2560.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gravity")
 	bool bGravityEnabled = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gravity")
+	float Acceleration = 980.f;
 
 public:
 	// Called every frame
@@ -42,5 +48,9 @@ private:
 	void OnGround(const FHitResult& GroundHitResult, const float& DeltaTime);
 
 	FCollisionQueryParams CollisionParameters;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gravity", meta=(AllowPrivateAccess = "true"))
 	float GravityVelocity = 0.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gravity", meta=(AllowPrivateAccess = "true"))
+	bool bIsFalling = false;
 };

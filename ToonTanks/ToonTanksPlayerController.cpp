@@ -10,6 +10,7 @@
 #include "SaveGame/SavePlayerData.h"
 #include "GameFramework/PlayerState.h"
 
+
 AToonTanksPlayerController::AToonTanksPlayerController()
 {
 	CheatClass = UToonTanksCheatManager::StaticClass();
@@ -19,14 +20,17 @@ AToonTanksPlayerController::AToonTanksPlayerController()
 void AToonTanksPlayerController::SetPlayerEnabledState(bool bNewPlayerEnabled)
 {
 	bPlayerEnabled = bNewPlayerEnabled;
+
 	if (bPlayerEnabled)
 	{
 		GetPawn()->EnableInput(this);
+		SetIgnoreLookInput(false);
 		OnPlayerEnabled();
 	}
 	else
 	{
 		GetPawn()->DisableInput(this);
+		SetIgnoreLookInput(true);
 		OnPlayerDisabled();
 	}
 	bShowMouseCursor = bPlayerEnabled;

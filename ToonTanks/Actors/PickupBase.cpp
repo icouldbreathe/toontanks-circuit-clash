@@ -81,7 +81,7 @@ void APickupBase::TriggerPickupSphere(UPrimitiveComponent* OverlappedComp, AActo
 	if (Tank && Tank->IsAlive())
 	{
 		TargetActor = Tank;
-		GravityComponent->EnableGravity(false);
+		GravityComponent->SetGravity(false);
 		bMoveToTarget = true;
 	}
 }

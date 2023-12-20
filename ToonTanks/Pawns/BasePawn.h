@@ -44,7 +44,7 @@ public:
 	FOnPawnDiedSignature OnPawnDied;
 
 protected:
-	void RotateTurret(const FVector& LookAtTarget) const;
+	virtual void RotateTurret(const FVector& LookAtTarget) const;
 	virtual void Fire();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")

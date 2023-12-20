@@ -9,8 +9,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "ToonTanks/ToonTanksPlayerController.h"
+#include "ToonTanks/Components/GravityComponent.h"
 #include "ToonTanks/Components/ProjectileInventory.h"
 #include "ToonTanks/Data/InputConfigData.h"
+#include "ToonTanks/Interfaces/GravityInterface.h"
 
 ATank::ATank()
 {
@@ -121,24 +123,12 @@ void ATank::Fire()
 */
 void ATank::Move(const FInputActionValue& Value)
 {
-	FVector StartTrace =
-		Value.Get<float>() * UKismetMathLibrary::GetForwardVector(GetActorRotation()) * 100.f + GetActorLocation();
-
-	FVector EndTrace = StartTrace;
-	EndTrace.Z -= 500.f;
-
-	FCollisionQueryParams CollisionParameters;
-	CollisionParameters.AddIgnoredActor(this);
-
 	FHitResult ForwardHitResult;
-	if (GetWorld()->LineTraceSingleByChannel(
-		ForwardHitResult,
-		StartTrace,
-		EndTrace,
-		ECC_WorldDynamic,
-		CollisionParameters))
+	float SlopePitchAngle, SlopeRollAngle;
+
+	// Rotate Tank based on slope angle returned by a trace hit
+	if (ForwardTrace(Value.Get<float>(), ForwardHitResult))
 	{
-		float SlopePitchAngle, SlopeRollAngle;
 		UKismetMathLibrary::GetSlopeDegreeAngles(
 			GetActorRightVector(),
 			ForwardHitResult.Normal,
@@ -151,13 +141,16 @@ void ATank::Move(const FInputActionValue& Value)
 		FRotator NewRotation = FRotator(SlopePitchAngle, GetActorRotation().Yaw, SlopeRollAngle);
 		FRotator DeltaRotation = FMath::RInterpTo(GetActorRotation(), NewRotation,
 			UGameplayStatics::GetWorldDeltaSeconds(this), 10.f);
+		
 		SetActorRotation(DeltaRotation);
 	}
 
-	FVector DeltaLocation = FVector::ZeroVector;
-	DeltaLocation.X = Value.Get<float>() * UGameplayStatics::GetWorldDeltaSeconds(this) * Speed * PawnSpeed;
+	FVector WorldOffset = GetActorForwardVector() * Value.Get<float>() * UGameplayStatics::GetWorldDeltaSeconds(this) * Speed * PawnSpeed;
 
-	AddActorLocalOffset(DeltaLocation, true);
+	// Add world offset split by components to allow sliding movement when either direction is blocking
+	AddActorWorldOffset(FVector(WorldOffset.X, 0.f, 0.f), true);
+	AddActorWorldOffset(FVector(0.f, WorldOffset.Y, 0.f), true);
+	AddActorWorldOffset(FVector(0.f, 0.f, WorldOffset.Z), true);
 }
 
 void ATank::Turn(const FInputActionValue& Value)
@@ -173,8 +166,13 @@ void ATank::Turn(const FInputActionValue& Value)
 */
 void ATank::RotateByCursor() const
 {
+	if (TankPlayerController->IsLookInputIgnored())
+	{
+		return;
+	}
+
 	FVector CursorWorldPosition, CursorWorldDirection;
-	GetTankPlayerController()->DeprojectMousePositionToWorld(CursorWorldPosition, CursorWorldDirection);
+	TankPlayerController->DeprojectMousePositionToWorld(CursorWorldPosition, CursorWorldDirection);
 
 	FHitResult HitResult;
 	if (GetWorld()->LineTraceSingleByChannel(
@@ -200,6 +198,25 @@ void ATank::ChangeProjectileOffset(const FInputActionValue& Value)
 void ATank::ChangeProjectileSlot(const FInputActionValue& Value)
 {
 	ProjectileInventory->EquipSlot(FMath::CeilToInt32(Value.Get<float>() - 1.f));
+}
+
+bool ATank::ForwardTrace(float Direction, FHitResult& Hit)
+{
+	FVector StartTrace =
+		Direction * UKismetMathLibrary::GetForwardVector(GetActorRotation()) * 100.f + GetActorLocation();
+
+	FVector EndTrace = StartTrace;
+	EndTrace.Z -= 500.f;
+
+	FCollisionQueryParams CollisionParameters;
+	CollisionParameters.AddIgnoredActor(this);
+	
+	return GetWorld()->LineTraceSingleByChannel(
+		Hit,
+		StartTrace,
+		EndTrace,
+		ECC_WorldDynamic,
+		CollisionParameters);
 }
 
 void ATank::AllowFire()

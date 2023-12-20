@@ -13,9 +13,19 @@ UGravityComponent::UGravityComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UGravityComponent::EnableGravity(bool bEnable)
+void UGravityComponent::SetGravity(bool bEnable)
 {
 	bGravityEnabled = bEnable;
+}
+
+void UGravityComponent::EnableGravity_Implementation(bool bEnabled)
+{
+	SetGravity(bEnabled);
+}
+
+bool UGravityComponent::IsFalling_Implementation()
+{
+	return bIsFalling;
 }
 
 // Called when the game starts
@@ -59,6 +69,8 @@ void UGravityComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UGravityComponent::OnFalling(const float& DeltaTime)
 {
+	bIsFalling = true;
+	
 	// Return to normal rotation when falling
 	FVector DeltaLocation = FVector::ZeroVector;
 	const FRotator NewRotation = FRotator(0.f, GetOwner()->GetActorRotation().Yaw, 0.f);
@@ -76,23 +88,24 @@ void UGravityComponent::OnFalling(const float& DeltaTime)
 	GetOwner()->SetActorEnableCollision(false);
 
 	// Fake gravity
+
+	DeltaLocation.Z = -1.f * GravityVelocity * DeltaTime;
+	GetOwner()->AddActorLocalOffset(DeltaLocation, true);
+
+	GravityVelocity += Acceleration * DeltaTime;
+	
 	if (GravityVelocity >= KillVelocity)
 	{
 		UGameplayStatics::ApplyDamage(GetOwner(), ToonTanksConstants::MAX_HEALTH, GetOwner()->GetInstigatorController(),
 			GetOwner(),
 			UDamageType::StaticClass());
 	}
-	else
-	{
-		GravityVelocity += 9.8f;
-	}
-
-	DeltaLocation.Z = -1.f * DeltaTime * GravityVelocity;
-	GetOwner()->AddActorLocalOffset(DeltaLocation, true);
 }
 
 void UGravityComponent::OnGround(const FHitResult& GroundHitResult, const float& DeltaTime)
 {
+	bIsFalling = false;
+	
 	FVector GroundOffset = GroundHitResult.ImpactPoint;
 	GroundOffset.Z += DistanceToGroundAtRest;
 
@@ -115,4 +128,5 @@ void UGravityComponent::OnGround(const FHitResult& GroundHitResult, const float&
 			GetOwner()->GetActorLocation().Y,
 			GroundOffset.Z)
 		+ GroundVelocity * DeltaTime);
+	
 }
